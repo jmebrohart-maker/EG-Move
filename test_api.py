@@ -67,12 +67,13 @@ def test_download_and_cleanup():
     code = upload_res.json()["code"]
     
     # 2. Download
+    # Note: TestClient handles background tasks synchronously after the response
     response = client.get(f"/api/download/{code}")
     assert response.status_code == 200
     assert response.content == content
     
     # 3. Verify Cleanup
-    # TestClient triggers background tasks on response close.
+    # In TestClient, background tasks run immediately after the request finishes
     assert code not in FILE_DB
 
 def test_invalid_code():
