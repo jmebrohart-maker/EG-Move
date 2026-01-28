@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EG-Move | Secure Transfer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#3B82F6', 600: '#2563EB', 900: '#1E3A8A' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+
+    <!-- Background Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div class="absolute top-10 left-10 w-72 h-72 bg-brand-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div class="absolute bottom-10 right-10 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+    </div>
+
+    <div class="w-full max-w-lg p-6">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold tracking-tight mb-2"><i class="fa-solid fa-paper-plane mr-2"></i>EG-Move</h1>
+            <p class="text-slate-400">Secure, limitless file transfer.</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="glass rounded-2xl p-1 shadow-2xl">
+            <!-- Tabs -->
+            <div class="grid grid-cols-2 gap-1 mb-1 bg-slate-800/50 p-1 rounded-xl">
+                <button onclick="switchTab('send')" id="tab-send" class="py-2 rounded-lg text-sm font-medium transition-all bg-brand-600 text-white shadow-lg">
+                    Send File
+                </button>
+                <button onclick="switchTab('receive')" id="tab-receive" class="py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    Receive File
+                </button>
+            </div>
+
+            <div class="p-6">
+                <!-- SEND SECTION -->
+                <div id="view-send" class="block">
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-brand-500 hover:bg-slate-800/50 transition-all cursor-pointer relative">
+                        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleFileSelect(this)">
+                        <div id="upload-prompt">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-500 mb-4"></i>
+                            <p class="text-lg font-medium">Click or Drag file here</p>
+                            <p class="text-xs text-slate-500 mt-2">No size limit. Zips allowed.</p>
+                        </div>
+                        <div id="upload-progress" class="hidden">
+                            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-500 mb-3"></i>
+                            <p class="text-sm font-bold animate-pulse">Uploading...</p>
+                            <p id="progress-text" class="text-xs text-slate-400 mt-1">0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Result Section -->
+                    <div id="result-screen" class="hidden mt-6 text-center">
+                        <p class="text-slate-400 text-sm mb-2">File Ready! Share this code:</p>
+                        <div class="bg-slate-800 rounded-lg p-4 mb-4 flex items-center justify-between border border-slate-700">
+                            <span id="generated-code" class="text-3xl font-mono font-bold text-brand-500 tracking-wider">---</span>
+                            <button onclick="copyCode()" class="text-slate-400 hover:text-white transition-colors">
+                                <i class="fa-regular fa-copy text-xl"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500">Code works for one download only.</p>
+                        <button onclick="resetUpload()" class="mt-4 text-sm text-brand-500 hover:underline">Send another</button>
+                    </div>
+                </div>
+
+                <!-- RECEIVE SECTION -->
+                <div id="view-receive" class="hidden">
+                    <div class="text-center space-y-4">
+                        <p class="text-slate-400">Enter the 6-digit code to download.</p>
+                        <input type="text" id="code-input" maxlength="7" placeholder="XXX-XXX" 
+                            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 text-center text-2xl font-mono tracking-widest focus:outline-none focus:border-brand-500 transition-colors uppercase">
+                        
+                        <div id="file-info" class="hidden bg-slate-800/50 p-4 rounded-lg border border-slate-700 mt-4">
+                            <p class="text-xs text-slate-400 uppercase font-bold">File Found</p>
+                            <p id="info-name" class="text-lg font-medium truncate my-1">image.png</p>
+                            <p id="info-size" class="text-xs text-slate-500">2.5 MB</p>
+                        </div>
+
+                        <button onclick="checkCode()" id="btn-check" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-brand-900/50">
+                            Access File
+                        </button>
+                        <button onclick="downloadFile()" id="btn-download" class="hidden w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+                            Download Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 text-xs text-slate-600">
+            Powered by EG-Move Container
+        </div>
+    </div>
+
+    <script>
+        // --- TABS ---
+        function switchTab(tab) {
+            document.getElementById('view-send').classList.add('hidden');
+            document.getElementById('view-receive').classList.add('hidden');
+            document.getElementById('view-' + tab).classList.remove('hidden');
+
+            const btnSend = document.getElementById('tab-send');
+            const btnRec = document.getElementById('tab-receive');
+
+            if (tab === 'send') {
+                btnSend.className = "py-2 rounded-lg text-sm font-medium transition-all bg-brand-600 text-white shadow-lg";
+                btnRec.className = "py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+            } else {
+                btnRec.className = "py-2 rounded-lg text-sm font-medium transition-all bg-brand-600 text-white shadow-lg";
+                btnSend.className = "py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+            }
+        }
+
+        // --- UPLOAD LOGIC ---
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            document.getElementById('upload-prompt').classList.add('hidden');
+            document.getElementById('upload-progress').classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/upload", true);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('progress-text').innerText = percent + "%";
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const resp = JSON.parse(xhr.responseText);
+                    document.getElementById('upload-progress').classList.add('hidden');
+                    document.getElementById('drop-zone').classList.add('hidden');
+                    document.getElementById('result-screen').classList.remove('hidden');
+                    document.getElementById('generated-code').innerText = resp.code;
+                } else {
+                    alert("Upload failed.");
+                    resetUpload();
+                }
+            };
+
+            xhr.onerror = () => { alert("Network Error"); resetUpload(); };
+            xhr.send(formData);
+        }
+
+        function resetUpload() {
+            document.getElementById('file-input').value = "";
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('upload-progress').classList.add('hidden');
+            document.getElementById('drop-zone').classList.remove('hidden');
+            document.getElementById('upload-prompt').classList.remove('hidden');
+        }
+
+        function copyCode() {
+            const code = document.getElementById('generated-code').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code copied!");
+        }
+
+        // --- DOWNLOAD LOGIC ---
+        async function checkCode() {
+            const code = document.getElementById('code-input').value.trim();
+            if(code.length < 6) return alert("Invalid Code");
+
+            const btn = document.getElementById('btn-check');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+
+            try {
+                const res = await fetch(`/api/info/${code}`);
+                if (!res.ok) throw new Error("File not found");
+                
+                const data = await res.json();
+                
+                // Show info
+                document.getElementById('info-name').innerText = data.filename;
+                document.getElementById('info-size').innerText = (data.size / 1024 / 1024).toFixed(2) + " MB";
+                document.getElementById('file-info').classList.remove('hidden');
+                
+                // Switch buttons
+                btn.classList.add('hidden');
+                const dlBtn = document.getElementById('btn-download');
+                dlBtn.classList.remove('hidden');
+                dlBtn.onclick = () => {
+                    window.location.href = `/api/download/${code}`;
+                    // Optional: Reset UI after 2 seconds
+                    setTimeout(() => {
+                        alert("Download started. The code is now invalid.");
+                        location.reload();
+                    }, 2000);
+                };
+
+            } catch (err) {
+                alert("Code not found or expired.");
+                btn.innerText = "Access File";
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+Ehrhart Group LLC
