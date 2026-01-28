@@ -228,19 +228,3 @@
 </html>
 ```
 
-### **How to Deploy**
-
-1.  **Initialize Git:**
-    ```bash
-    git init
-    git add .
-    git commit -m "Initial commit of EG-Move"
-    ```
-
-2.  **Build and Run (Docker):**
-    ```bash
-    # Build the image
-    docker build -t eg-move .
-
-    # Run the container (Mapping port 8080 to internal 80)
-    docker run -d -p 8080:80 -v $(pwd)/data:/code/app/storage eg-move
