@@ -1,8 +1,20 @@
+name: eg-move-project
+
 services:
-  egmove:
-    image: egmove
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+  eg-move:
+    image: jmebrohart/egmove:latest
+    container_name: eg-move
+    restart: unless-stopped
     ports:
-      - 8000:8000
+      - "8080:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - MAX_UPLOAD_SIZE=0
+    networks:
+      - proxy_net
+
+networks:
+  proxy_net:
+    name: proxy_net  
+    driver: bridge   
