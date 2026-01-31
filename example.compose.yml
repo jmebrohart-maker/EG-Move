@@ -1,0 +1,21 @@
+services:
+  eg-move:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: eg-move
+    restart: unless-stopped
+    # This command is required for the app to trust Nginx headers
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - MAX_UPLOAD_SIZE=0
+    networks:
+      - proxy_net
+
+networks:
+  proxy_net:
+    external: true
