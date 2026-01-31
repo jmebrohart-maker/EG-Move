@@ -1,3 +1,6 @@
+**** AI Usage is High ****  I made this just to play around with code and docker. Im a diesel mechanic and wanted to have fun with docker. 
+**** Docker Hub and scout is being used in DEV ****
+
 EG-Move: Scalable Secure File Transfer System
 
 Design Document & Implementation Plan
