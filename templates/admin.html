@@ -154,13 +154,22 @@
         }
 
         function sendEmail(code, filename) {
+            // Prompt admin for custom note
+            const customMsg = prompt("Enter a custom note for the recipient (optional):");
+            
             const subject = encodeURIComponent(`File Transfer: ${filename}`);
-            const body = encodeURIComponent(
-                `Here is the file you requested: ${filename}\n\n` +
-                `Code: ${code}\n` +
-                `Download Link: ${CURRENT_BASE_URL}/api/download/${code}\n\n` +
-                `Note: This link may expire.`
-            );
+            
+            let bodyText = "";
+            if(customMsg && customMsg.trim() !== "") {
+                bodyText += `${customMsg}\n\n---\n\n`;
+            }
+            
+            bodyText += `Here is the file you requested: ${filename}\n\n`;
+            bodyText += `Code: ${code}\n`;
+            bodyText += `Download Link:\n${CURRENT_BASE_URL}/api/download/${code}\n\n`;
+            bodyText += `Note: This link may expire.`;
+
+            const body = encodeURIComponent(bodyText);
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
